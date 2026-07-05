@@ -47,6 +47,19 @@
   ol li{counter-increment:step}
   ol li::before{content:counter(step);background:var(--red);color:#fff;width:1.15rem;height:1.15rem;border-radius:50%;
           font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;top:.28em}
+  .bars{margin-top:.9rem;display:flex;flex-direction:column;gap:.75rem;max-width:40ch}
+  .bar{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
+  .bl{flex:0 0 9rem;text-align:right;font-weight:600;font-size:.85rem;color:var(--ink)}
+  .bt{flex:1;height:.9rem;background:#eef0f4;border-radius:999px;overflow:hidden}
+  .bt i{display:block;height:100%;border-radius:999px;background:#a4aab5;transform-origin:left;transform:scaleX(0)}
+  .slide.active .bt i{animation:grow 1s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes grow{to{transform:scaleX(1)}}
+  .bv{flex:0 0 3.4rem;font-size:.8rem;color:var(--grey)}
+  ul.why{list-style:none;margin-top:.5rem}
+  ul.why li{padding-left:1.35rem;margin:.7rem 0;max-width:48ch;font-size:1rem}
+  ul.why li::before{content:"";position:absolute;left:0;top:.5em;width:.5rem;height:.5rem;background:var(--red);border-radius:2px}
+  ul.why li b{display:block;line-height:1.3;color:var(--ink)}
+  ul.why li span{display:block;color:var(--grey);font-size:.86rem;line-height:1.4;margin-top:.12rem}
 </style></head>
 <body><div class="deck" id="deck">
 
@@ -65,7 +78,7 @@
       <img src="god.png" alt="god">
     </div>
   </div>
-  <div class="foot"><span>TabPFN — small tabular classification</span><span>1 / 5</span></div>
+  <div class="foot"><span>TabPFN — small tabular classification</span><span>1 / 6</span></div>
 </section>
 
 <!-- SLIDE 2 -->
@@ -80,7 +93,7 @@
         <canvas id="cv-gp" style="height:38vh"></canvas>
       </div>
       <div class="animsub" id="sub-gp"></div>
-      <div class="cap">Predictions behave like a GP — a smooth fit with <b>calibrated uncertainty</b>.</div>
+      <div class="cap">A PFN approximates the <b>posterior predictive distribution</b> — the paper shows it can even mimic a Gaussian Process.</div>
     </div>
     <div class="fig" style="display:flex;flex-direction:column">
       <h3 style="font-size:1.1rem;margin-bottom:.5rem">Permutation-invariant Transformer</h3>
@@ -89,7 +102,7 @@
         <canvas id="cv-perm" style="height:38vh"></canvas>
       </div>
       <div class="animsub" id="sub-perm"></div>
-      <div class="cap">Training rows are an <b>unordered set</b> — reorder them, the prediction is unchanged.</div>
+      <div class="cap">PFNs use <b>no positional encoding</b> over training rows → the set of examples is <b>permutation-invariant</b>.</div>
     </div>
     <div class="fig" style="display:flex;flex-direction:column">
       <h3 style="font-size:1.1rem;margin-bottom:.5rem">Structural causal model prior</h3>
@@ -98,13 +111,38 @@
         <canvas id="cv-scm" style="height:38vh"></canvas>
       </div>
       <div class="animsub" id="sub-scm"></div>
-      <div class="cap">Data is sampled from <b>causal graphs</b> — detailed on the next slide.</div>
+      <div class="cap">The prior draws datasets from <b>structural causal models</b> — detailed on the next slide.</div>
     </div>
   </div>
-  <div class="foot"><span>In-context learning for tables</span><span>2 / 5</span></div>
+  <div class="foot"><span>In-context learning for tables</span><span>2 / 6</span></div>
 </section>
 
-<!-- SLIDE 3 -->
+<!-- SLIDE 3: Attention mechanism -->
+<section class="slide">
+  <div class="kicker">The engine inside the Transformer</div>
+  <h2>Two-way attention: across features <span style="color:#2563a8">and</span> across rows</h2>
+  <div class="row" style="align-items:center">
+    <div class="col" style="flex:.85">
+      <ul>
+        <li><b style="color:#2563a8">Feature attention</b> (across columns) captures <b>interactions</b> and spline-like effects between predictors.</li>
+        <li><b style="color:var(--red)">Sample attention</b> (across rows) compares a point to <b>similar training rows</b> — e.g. serial correlation.</li>
+        <li>Training rows + the test point flow through <b>together</b>; attention selects which pre-learned weights fit <i>this</i> table — localized, in-context.</li>
+        <li>A final <b>MLP</b> turns the test vector into a full <b>predicted distribution</b> (piece-wise-constant / Riemann), not just a point estimate.</li>
+      </ul>
+      <div class="authors" style="margin-top:1rem;font-size:.88rem">Diagram: Hollmann et al., <b>Nature 2025</b> (TabPFN v2) · via Max Kuhn, “TabPFN: A Deep-Learning Solution for Tabular Data,” <b>R/Pharma 2025</b>.</div>
+    </div>
+    <div class="fig" style="flex:1.3">
+      <div class="animfig">
+        <button class="replay" data-anim="attn">▶ Replay</button>
+        <canvas id="cv-attn" style="height:58vh"></canvas>
+      </div>
+      <div class="animsub" id="sub-attn"></div>
+    </div>
+  </div>
+  <div class="foot"><span>2D feature + sample attention · TabPFN v2</span><span>3 / 6</span></div>
+</section>
+
+<!-- SLIDE 4: Synthetic data -->
 <section class="slide">
   <div class="kicker">Where the training data comes from</div>
   <h2>It never sees real data — it learns from millions of synthetic worlds</h2>
@@ -118,6 +156,8 @@
         <li>Tag some nodes as features <b style="color:#2563a8">X</b> and one node as target <b style="color:var(--red)">y</b> → read off one dataset.</li>
         <li><b>Repeat.</b> A 12-layer Transformer trains on <b>18,000 × 512</b> such datasets, learning the posterior predictive distribution <code>q(y|x, D<sub>train</sub>)</code>.</li>
       </ol>
+      <p class="sub" style="margin-top:.7rem;background:#eef4fb;border-left:3px solid #2563a8;padding:.5rem .75rem;border-radius:6px;font-size:.98rem;line-height:1.45">
+        <b>Why more <span style="color:#2563a8">X</span> features help:</b> each feature is an <b>observed node</b> in the causal graph. More observed causes of <b style="color:var(--red)">y</b> give the in-context network more evidence to pin down its mechanism, <b>sharpening the posterior</b> — until v1's ≤100-feature cap.</p>
     </div>
     <div class="fig" style="flex:1.25">
       <div class="animfig">
@@ -127,10 +167,10 @@
       <div class="animsub" id="sub-factory"></div>
     </div>
   </div>
-  <div class="foot"><span>Prior-Data Fitted Network · causal-model prior</span><span>3 / 5</span></div>
+  <div class="foot"><span>Prior-Data Fitted Network · causal-model prior</span><span>4 / 6</span></div>
 </section>
 
-<!-- SLIDE 4 -->
+<!-- SLIDE 5: Results -->
 <section class="slide">
   <div class="kicker">The result that turns heads</div>
   <h2>Matches 1 hour of AutoML tuning — in ~0.6 seconds</h2>
@@ -159,33 +199,35 @@
       </ul>
     </div>
   </div>
-  <div class="foot"><span>18 numerical OpenML-CC18 datasets</span><span>4 / 5</span></div>
+  <div class="foot"><span>18 numerical OpenML-CC18 datasets</span><span>5 / 6</span></div>
 </section>
 
-<!-- SLIDE 5 -->
+<!-- SLIDE 6: Limitations -->
 <section class="slide">
-  <div class="kicker">So what — for an AI engineer</div>
-  <h2>When to reach for TabPFN (and when not to)</h2>
-  <div class="row">
+  <div class="kicker">The honest picture</div>
+  <h2>One forward pass ≈ 1 second — but here's where it breaks, and why</h2>
+  <div class="row" style="align-items:flex-start;gap:3vw">
     <div class="col">
-      <p class="pill" style="background:#e8f6ee;color:#1e874b">USE IT WHEN</p>
-      <ul>
-        <li>Small dataset: <b>≤ 1,000 training rows</b>, ≤ 100 numeric features, ≤ 10 classes.</li>
-        <li>You want a <b>strong baseline in seconds</b> with no tuning — perfect first move in a Kaggle tabular comp.</li>
-        <li>You plan to <b>ensemble</b> — it adds signal trees miss.</li>
-      </ul>
+      <p class="pill" style="background:#e8f6ee;color:#1e874b">INFERENCE SPEED · time to a trained predictor</p>
+      <div class="bars">
+        <div class="bar"><span class="bl">TabPFN</span><div class="bt"><i style="width:7%;background:var(--red)"></i></div><span class="bv">~1 s</span></div>
+        <div class="bar"><span class="bl">XGBoost (tuned)</span><div class="bt"><i style="width:62%"></i></div><span class="bv">~5 min</span></div>
+        <div class="bar"><span class="bl">Auto-sklearn</span><div class="bt"><i style="width:86%"></i></div><span class="bv">~30 min</span></div>
+        <div class="bar"><span class="bl">AutoGluon (1 h)</span><div class="bt"><i style="width:100%"></i></div><span class="bv">~1 h</span></div>
+      </div>
+      <p class="cap" style="margin-top:.9rem;max-width:40ch">One frozen forward pass vs. a full training + hyperparameter search — the paper reports <b>230× faster on CPU, 5,700× on GPU</b> at matching accuracy.</p>
     </div>
     <div class="col">
-      <p class="pill" style="background:#fdecea;color:var(--red)">WATCH OUT</p>
-      <ul>
-        <li>Weaker with <b>categorical features / missing values</b> (v1).</li>
-        <li>Not for <b>large</b> datasets or regression (v1 scope).</li>
-        <li>It's a <b>1-second call</b>: <code>pip install tabpfn</code>, scikit-learn API.</li>
+      <p class="pill" style="background:#fdecea;color:var(--red)">REAL LIMITATIONS · and why</p>
+      <ul class="why">
+        <li><b>Small data only — ≤ 1,000 rows.</b><span>Attention is O(n²) over the whole training set, and the prior only ever saw <i>small</i> synthetic datasets — it can't extrapolate past that size.</span></li>
+        <li><b>≤ 100 features, ≤ 10 classes.</b><span>The input uses a fixed-size encoding trained on bounded dimensions.</span></li>
+        <li><b>Weak on categorical / missing values.</b><span>The prior is built mostly from <i>numerical</i> SCM / BNN mechanisms.</span></li>
+        <li><b>Classification only (v1) — no regression.</b><span>It's trained to output class posteriors, not a continuous y. <span style="color:var(--red)">(TabPFN v2, Nature 2025, lifts several of these.)</span></span></li>
       </ul>
     </div>
   </div>
-  <p class="sub big" style="margin-top:1.6rem"><b>The big picture:</b> foundation-model / in-context learning has arrived for tabular data — the same paradigm shift that hit text and images. <span style="color:var(--red)">(TabPFN v2, Nature 2025, extends this to bigger data &amp; regression.)</span></p>
-  <div class="foot"><span>Takeaways</span><span>5 / 5</span></div>
+  <div class="foot"><span>Fast, but bounded — TabPFN v1</span><span>6 / 6</span></div>
 </section>
 
 <div class="nav">← → to navigate · F for fullscreen · print to PDF</div>
@@ -209,12 +251,15 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 
-function Anim(canvas,render,subEl){
+function Anim(canvas,render,subEl,opts){opts=opts||{};
   const ctx=canvas.getContext('2d');let raf=null,start=0,running=false,w=0,h=0;
   function fit(){const r=canvas.getBoundingClientRect();w=Math.max(1,Math.round(r.width));h=Math.max(1,Math.round(r.height));
     canvas.width=w*DPR;canvas.height=h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
-  function loop(ts){if(!running)return;if(!start)start=ts;const time=(ts-start)/1000;
-    ctx.clearRect(0,0,w,h);render(ctx,w,h,time,api);raf=requestAnimationFrame(loop);}
+  function loop(ts){if(!running)return;if(!start)start=ts;let time=(ts-start)/1000;
+    if(opts.once&&time>opts.dur)time=opts.dur;                       // freeze on final frame
+    ctx.clearRect(0,0,w,h);render(ctx,w,h,time,api);
+    if(opts.once&&time>=opts.dur){running=false;raf=null;return;}    // play exactly once
+    raf=requestAnimationFrame(loop);}
   const api={
     play(){if(running)return;fit();running=true;start=0;raf=requestAnimationFrame(loop);},
     stop(){running=false;if(raf)cancelAnimationFrame(raf);raf=null;},
@@ -252,7 +297,7 @@ function gpRender(ctx,w,h,time,api){
   for(let k=0;k<show;k++){const d=gpDots[k];const sx=mapX(d.xd),px=L+2+d.jit%14;
     const X=sx+(px-sx)*ease(p3),Y=mapY(d.yv);
     ctx.fillStyle='rgba(26,26,46,'+(0.55+0.35*(1-p3))+')';ctx.beginPath();ctx.arc(X,Y,3,0,6.283);ctx.fill();}
-  api.sub(t<3?'Data: y = f(x) + noise':t<4.9?'Collapse along x → look only at the spread of y':'The pile is a density — the model’s predicted distribution + uncertainty');
+  api.sub(t<3?'Data: y = f(x) + noise':t<4.9?'Collapse along x → look only at the spread of y':'A PFN returns this whole density — the posterior predictive distribution (GP-like)');
 }
 
 /* ===== 2. Permutation-invariant Transformer: shuffle rows, same output ===== */
@@ -283,7 +328,7 @@ function permRender(ctx,w,h,time,api){
   const ox=qx+70;ctx.fillStyle=RED;ctx.strokeStyle=RED;ctx.lineWidth=2;roundRect(ctx,ox,qy-16,64,32,8);ctx.stroke();
   ctx.fillStyle='rgba(192,57,43,.08)';ctx.fill();ctx.fillStyle=RED;ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('ŷ = 0.71',ox+32,qy+5);ctx.textAlign='start';
   ctx.strokeStyle='rgba(138,144,160,.5)';ctx.beginPath();ctx.moveTo(qx+30,qy);ctx.lineTo(ox,qy);ctx.stroke();
-  api.sub(t<0.7?'Rows slide to new positions…':'Order changed — the prediction ŷ is identical');
+  api.sub(t<0.7?'Shuffling the training rows…':'No positional encoding over rows → permutation-invariant: ŷ unchanged');
 }
 
 /* ===== 3. SCM teaser: sample graph, propagate noise, tag X / y ===== */
@@ -310,65 +355,77 @@ function scmRender(ctx,w,h,time,api){
   api.sub(t<0.6?'① Sample a causal graph':t<3.0?'② Sample noise → propagate values':'③ Pick features X and target y');
 }
 
-/* ===== 4. Synthetic-dataset factory (slide 3 centerpiece) ===== */
-let facCycle=-1,facGraph=null,facCount=12288;
-function buildGraph(seed,W,H){const r=mulberry32(seed);const nL=3+Math.floor(r()*2);// 3-4 layers
-  const layers=[];for(let l=0;l<nL;l++)layers.push(1+Math.floor(r()*2.5));// 1-3 nodes/layer (few = simple)
-  const pad=34,gw=W*0.6;const nodes=[];
-  layers.forEach((cnt,li)=>{for(let k=0;k<cnt;k++){nodes.push({x:pad+gw*(li/(nL-1)),y:pad+(H-2*pad)*((k+0.5)/cnt),li});}});
-  const edges=[];for(let a=0;a<nodes.length;a++)for(let b=0;b<nodes.length;b++)if(nodes[b].li===nodes[a].li+1&&r()<0.75)edges.push([a,b]);
-  // ensure connectivity: each non-root has >=1 parent
-  nodes.forEach((n,b)=>{if(n.li>0&&!edges.some(e=>e[1]===b)){const cand=nodes.map((m,a)=>m.li===n.li-1?a:-1).filter(a=>a>=0);edges.push([cand[Math.floor(r()*cand.length)],b]);}});
-  const nonRoot=nodes.map((n,idx)=>n.li>0?idx:-1).filter(x=>x>=0);
-  const tgt=nonRoot[Math.floor(r()*nonRoot.length)];
-  const featPool=nodes.map((n,idx)=>idx!==tgt?idx:-1).filter(x=>x>=0);
-  const nf=Math.min(3,featPool.length);const feats=[];for(let k=0;k<nf;k++){feats.push(featPool.splice(Math.floor(r()*featPool.length),1)[0]);}
-  const rows=[];for(let ri=0;ri<4;ri++){const row=feats.map(()=>(r()*2-1).toFixed(2));row.push((r()*2-1).toFixed(2));rows.push(row);}
-  return {nodes,edges,feats,tgt,rows};
+/* ===== 4. Synthetic-dataset factory: named features + reasonable causal graphs ===== */
+const facScenes=[
+ {title:'Loan default',
+  nodes:[{n:'Education',l:0},{n:'Age',l:0},{n:'Income',l:1},{n:'Debt',l:2},{n:'Default',l:3}],
+  edges:[[0,2],[1,2],[2,3],[3,4],[1,4]], feats:[1,2,3], tgt:4,
+  cols:['Age','Income','Debt','Default'],
+  rows:[['34','52k','0.31','0'],['58','88k','0.47','1'],['27','39k','0.20','0'],['45','71k','0.55','1']]},
+ {title:'Heart-disease risk',
+  nodes:[{n:'Age',l:0},{n:'BMI',l:0},{n:'Smoker',l:0},{n:'BP',l:1},{n:'Heart risk',l:2}],
+  edges:[[0,3],[1,3],[2,3],[3,4],[0,4]], feats:[0,1,2,3], tgt:4,
+  cols:['Age','BMI','Smoke','BP','Risk'],
+  rows:[['52','27','1','148','1'],['38','22','0','120','0'],['61','31','1','159','1'],['45','24','0','128','0']]},
+ {title:'Customer churn',
+  nodes:[{n:'Tenure',l:0},{n:'Fee',l:0},{n:'Contract',l:0},{n:'Support',l:1},{n:'Churn',l:2}],
+  edges:[[1,3],[0,4],[2,4],[3,4]], feats:[0,1,3], tgt:4,
+  cols:['Tenure','Fee','Support','Churn'],
+  rows:[['24','45','1','0'],['3','89','6','1'],['40','30','0','0'],['8','75','4','1']]},
+];
+let facCount=12288,facPrev=-1;
+function facLayout(sc,w,h,pad,gw){
+  const maxL=Math.max(...sc.nodes.map(n=>n.l));
+  const byL={};sc.nodes.forEach((n,idx)=>{(byL[n.l]=byL[n.l]||[]).push(idx);});
+  return sc.nodes.map((n,idx)=>{const grp=byL[n.l],k=grp.indexOf(idx);
+    return {x:pad+40+ (gw-40)*(maxL?n.l/maxL:0), y:pad+(h-2*pad)*((k+0.5)/grp.length), l:n.l};});
 }
 function facRender(ctx,w,h,time,api){
-  const cyc=9.5,ci=Math.floor(time/cyc),t=time%cyc;
-  if(ci!==facCycle){facCycle=ci;facGraph=buildGraph(ci*97+5,w,h);if(ci>0)facCount+=512;}
-  const G=facGraph;const drawIn=ease(t/1.8),flow=ease((t-2.0)/2.0),tag=ease((t-4.2)/1.2),table=ease((t-5.6)/2.2);
-  // title of stage
-  const pad=34,gw=w*0.6;
+  const cyc=10,ci=Math.floor(time/cyc),t=time%cyc;
+  const sc=facScenes[ci%facScenes.length];
+  if(ci!==facPrev){facPrev=ci;if(ci>0)facCount+=512;}
+  const pad=26,gw=w*0.54,pos=facLayout(sc,w,h,pad,gw);
+  const drawIn=ease(t/1.9),flow=ease((t-2.1)/2.1),tag=ease((t-4.4)/1.2),table=ease((t-5.8)/2.4);
+  ctx.textBaseline='middle';
   // edges
-  G.edges.forEach(([a,b])=>{const n1=G.nodes[a],n2=G.nodes[b];const ap=clamp(drawIn*1.5-n1.li*0.3,0,1);
-    ctx.strokeStyle='rgba(138,144,160,'+(0.5*ap)+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(n1.x,n1.y);ctx.lineTo(n1.x+(n2.x-n1.x)*ap,n1.y+(n2.y-n1.y)*ap);ctx.stroke();
-    const fp=clamp(flow*2-n1.li*0.45,0,1);if(fp>0&&fp<1){ctx.fillStyle=BLUE;ctx.beginPath();ctx.arc(n1.x+(n2.x-n1.x)*fp,n1.y+(n2.y-n1.y)*fp,3.5,0,6.283);ctx.fill();}});
+  sc.edges.forEach(([a,b])=>{const n1=pos[a],n2=pos[b];const ap=clamp(drawIn*1.5-n1.l*0.28,0,1);if(ap<=0)return;
+    ctx.strokeStyle='rgba(138,144,160,'+(0.55*ap)+')';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(n1.x,n1.y);ctx.lineTo(n1.x+(n2.x-n1.x)*ap,n1.y+(n2.y-n1.y)*ap);ctx.stroke();
+    const fp=clamp(flow*2-n1.l*0.4,0,1);if(fp>0&&fp<1){ctx.fillStyle=BLUE;ctx.beginPath();ctx.arc(n1.x+(n2.x-n1.x)*fp,n1.y+(n2.y-n1.y)*fp,3.5,0,6.283);ctx.fill();}});
   // noise pulses at roots
-  if(t>1.9&&t<4){G.nodes.forEach(n=>{if(n.li===0){const pr=(t*1.6)%1;ctx.strokeStyle='rgba(37,99,168,'+(0.5*(1-pr))+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(n.x,n.y,14+pr*10,0,6.283);ctx.stroke();}});}
-  // nodes
-  G.nodes.forEach((n,idx)=>{const ap=clamp(drawIn*1.6-n.li*0.3,0,1);if(ap<=0)return;
-    const lit=clamp(flow*2.4-n.li*0.55,0,1);
-    ctx.globalAlpha=ap;ctx.fillStyle=lit>0.1?'#465': '#cfd4dd';ctx.fillStyle=lit>0.1?'#4b5568':'#cfd4dd';
-    ctx.beginPath();ctx.arc(n.x,n.y,15,0,6.283);ctx.fill();ctx.globalAlpha=1;
-    if(tag>0){let ring=null,lab=null;if(idx===G.tgt){ring=RED;lab='y';}else if(G.feats.includes(idx)){ring=BLUE;lab='X';}
-      if(ring){ctx.globalAlpha=tag;ctx.strokeStyle=ring;ctx.lineWidth=3;ctx.beginPath();ctx.arc(n.x,n.y,18,0,6.283);ctx.stroke();
-        ctx.fillStyle=ring;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(lab,n.x,n.y-24);ctx.textAlign='start';ctx.globalAlpha=1;}}});
-  // data table on right
-  if(table>0){const tx=pad+gw+18,ty=pad+6,cw=Math.min(46,(w-tx-14)/(G.feats.length+1)),rh=Math.min(30,(h-2*pad)/5.5);
-    const cols=G.feats.length+1;
-    ctx.globalAlpha=table;
-    // header
+  if(t>2.0&&t<4.3){sc.nodes.forEach((n,idx)=>{if(n.l===0){const pr=(t*1.6)%1;ctx.strokeStyle='rgba(37,99,168,'+(0.45*(1-pr))+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pos[idx].x,pos[idx].y,20+pr*10,0,6.283);ctx.stroke();}});}
+  // node chips with names
+  ctx.font='11px sans-serif';
+  sc.nodes.forEach((n,idx)=>{const p=pos[idx],ap=clamp(drawIn*1.6-n.l*0.28,0,1);if(ap<=0)return;
+    const lit=clamp(flow*2.4-n.l*0.5,0,1);const tw=ctx.measureText(n.n).width,bw=tw+18,bh=22;
+    let ring=null,lab=null;if(tag>0){if(idx===sc.tgt){ring=RED;lab='y';}else if(sc.feats.includes(idx)){ring=BLUE;lab='X';}}
+    ctx.globalAlpha=ap;
+    ctx.fillStyle=lit>0.15?'#eaf2fb':'#f4f5f8';ctx.strokeStyle=ring?ring:(lit>0.15?'#8fb4dd':'#d2d6de');ctx.lineWidth=ring?2.5:1.2;
+    roundRect(ctx,p.x-bw/2,p.y-bh/2,bw,bh,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle=INK;ctx.textAlign='center';ctx.fillText(n.n,p.x,p.y+0.5);
+    if(ring&&lab){ctx.globalAlpha=ap*tag;ctx.fillStyle=ring;ctx.font='bold 11px sans-serif';ctx.fillText(lab,p.x,p.y-bh/2-8);ctx.font='11px sans-serif';}
+    ctx.globalAlpha=1;ctx.textAlign='start';});
+  // data table (named columns)
+  if(table>0){const cols=sc.cols.length,tx=pad+gw+16,avail=w-tx-10,cw=Math.min(58,avail/cols),rh=Math.min(28,(h-2*pad)/5.6),ty=pad+4;
+    ctx.globalAlpha=table;ctx.textAlign='center';
     for(let c=0;c<cols;c++){const isY=c===cols-1;ctx.fillStyle=isY?'rgba(192,57,43,.12)':'rgba(37,99,168,.12)';
-      roundRect(ctx,tx+c*cw,ty,cw-3,rh-4,5);ctx.fill();ctx.fillStyle=isY?RED:BLUE;ctx.font='bold 12px sans-serif';ctx.textAlign='center';
-      ctx.fillText(isY?'y':'x'+(c+1),tx+c*cw+(cw-3)/2,ty+rh/2+2);ctx.textAlign='start';}
-    // rows appear progressively
-    const shownRows=Math.round(G.rows.length*ease(table));
-    for(let ri=0;ri<shownRows;ri++){const y=ty+(ri+1)*rh;for(let c=0;c<cols;c++){const isY=c===cols-1;
-      ctx.fillStyle='#fff';ctx.strokeStyle='#e6e9ef';ctx.lineWidth=1;roundRect(ctx,tx+c*cw,y,cw-3,rh-4,5);ctx.fill();ctx.stroke();
-      ctx.fillStyle=isY?RED:INK;ctx.font='11px sans-serif';ctx.textAlign='center';ctx.fillText(G.rows[ri][c],tx+c*cw+(cw-3)/2,y+rh/2+2);ctx.textAlign='start';}}
-    ctx.globalAlpha=1;}
-  // counter
-  ctx.fillStyle=GREY;ctx.font='12px sans-serif';ctx.fillText('synthetic datasets: '+facCount.toLocaleString(),pad,h-8);
-  api.sub(t<1.9?'① Sample a causal DAG (prefer few nodes → simple)':t<4.2?'② Sample noise ε → propagate through the graph':t<5.6?'③ Tag feature nodes X and one target y':t<8?'④ Read off one synthetic dataset':'⑤ Repeat → millions of datasets');
+      roundRect(ctx,tx+c*cw,ty,cw-3,rh-3,5);ctx.fill();ctx.fillStyle=isY?RED:BLUE;ctx.font='bold 10px sans-serif';
+      ctx.fillText(sc.cols[c],tx+c*cw+(cw-3)/2,ty+rh/2);}
+    const shown=Math.round(sc.rows.length*ease(table));
+    for(let ri=0;ri<shown;ri++){const y=ty+(ri+1)*rh;for(let c=0;c<cols;c++){const isY=c===cols-1;
+      ctx.fillStyle='#fff';ctx.strokeStyle='#e6e9ef';ctx.lineWidth=1;roundRect(ctx,tx+c*cw,y,cw-3,rh-3,5);ctx.fill();ctx.stroke();
+      ctx.fillStyle=isY?RED:INK;ctx.font='10px sans-serif';ctx.fillText(sc.rows[ri][c],tx+c*cw+(cw-3)/2,y+rh/2);}}
+    ctx.globalAlpha=1;ctx.textAlign='start';}
+  // stage caption + counter
+  ctx.textBaseline='alphabetic';ctx.fillStyle=INK;ctx.font='bold 12px sans-serif';ctx.fillText('“'+sc.title+'”',pad,16);
+  ctx.fillStyle=GREY;ctx.font='12px sans-serif';ctx.fillText('synthetic datasets: '+facCount.toLocaleString(),pad,h-6);
+  api.sub(t<2.0?'① Sample a causal graph — e.g. “'+sc.title+'”':t<4.4?'② Sample noise ε → propagate cause → effect':t<5.8?'③ Tag feature nodes X and one target y':t<8.2?'④ Read off one labelled dataset':'⑤ Repeat with a new causal world → millions of datasets');
 }
 
 /* ===== 5. Speed race (slide 4 strip) ===== */
 const racers=[{n:'Auto-sklearn',c:'#8a90a0',end:3600},{n:'AutoGluon',c:'#8a90a0',end:2400},{n:'XGBoost (tuned)',c:'#8a90a0',end:1800}];
 function raceRender(ctx,w,h,time,api){
-  const cyc=5,t=time%cyc,L=90,R=64,pw=w-L-R,y0=h*0.5;
+  const cyc=5,t=Math.min(time,cyc),L=90,R=64,pw=w-L-R,y0=h*0.5;
   const lt=v=>L+pw*(Math.log10(clamp(v,0.3,3600))-Math.log10(0.3))/(Math.log10(3600)-Math.log10(0.3));
   // axis + ticks
   ctx.strokeStyle='#e3e6ec';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,y0+22);ctx.lineTo(L+pw,y0+22);ctx.stroke();
@@ -386,15 +443,72 @@ function raceRender(ctx,w,h,time,api){
   api.sub(prog<1?'Baselines still tuning…':'Same accuracy — TabPFN finished in ~0.6 s vs ~1 h of AutoML (illustrative)');
 }
 
+/* ===== 6. Two-way attention (feature + sample) → MLP → predicted distribution ===== */
+const attnRows=[['1.2','6.1','3.0'],['8.9','9.1','3.1'],['1.0','2.9','6.7'],['33.3','2.2','?']];
+const attnCols=['x₁','x₂','y'];
+function fadePulse(t,a,b){ // fade in from a, out by b
+  if(t<a)return 0;if(t>b)return 0;const mid=(a+b)/2,half=(b-a)/2;return ease(1-Math.abs(t-mid)/half);}
+function arrow(ctx,x1,y1,x2,y2,col,a,lw){if(a<=0.01)return;ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=a;ctx.lineWidth=lw||1.5;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  const ang=Math.atan2(y2-y1,x2-x1),hl=5;ctx.beginPath();ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hl*Math.cos(ang-0.5),y2-hl*Math.sin(ang-0.5));ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hl*Math.cos(ang+0.5),y2-hl*Math.sin(ang+0.5));ctx.stroke();ctx.restore();}
+function attnRender(ctx,w,h,time,api){
+  const cyc=9.5,t=time%cyc,pad=14,cols=3,rws=attnRows.length;
+  const tw=Math.min(w*0.42,270),ch=Math.min(34,(h-2*pad-18)/(rws+1)),cw=tw/cols,tx=pad+4,ty=pad+4;
+  const cx=(r,c)=>tx+c*cw+cw/2, cy=r=>ty+(r+1)*ch+ch/2;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  // header
+  for(let c=0;c<cols;c++){ctx.fillStyle=c===cols-1?RED:BLUE;ctx.font='bold 12px sans-serif';ctx.fillText(attnCols[c],cx(0,c),ty+ch/2);}
+  // cells
+  for(let r=0;r<rws;r++)for(let c=0;c<cols;c++){const isTest=r===rws-1,isY=c===cols-1;
+    const x=tx+c*cw,y=ty+(r+1)*ch;
+    ctx.fillStyle=isTest?(isY?'#fdf1ec':'#f2c4ae'):'#eef2f8';
+    ctx.fillRect(x+1.5,y+1.5,cw-3,ch-3);
+    ctx.fillStyle=(isTest&&isY)?RED:INK;ctx.font=(isTest&&isY)?'bold 13px sans-serif':'12px sans-serif';
+    ctx.fillText(attnRows[r][c],x+cw/2,y+ch/2);}
+  ctx.fillStyle=GREY;ctx.font='10px sans-serif';ctx.fillText('training rows + test ( ? )',tx+tw/2,ty+(rws+1)*ch+9);
+  // ① feature attention: horizontal, within each row
+  const fA=fadePulse(t,1.2,4.2);
+  for(let r=0;r<rws;r++){const y=cy(r);
+    arrow(ctx,cx(r,0)+13,y,cx(r,1)-13,y,BLUE,fA*0.85,1.6);
+    arrow(ctx,cx(r,1)+13,y,cx(r,2)-13,y,BLUE,fA*0.85,1.6);}
+  // ② sample attention: vertical, within each column
+  const sA=fadePulse(t,4.4,7.0);
+  for(let c=0;c<cols;c++){const x=cx(0,c);
+    for(let r=0;r<rws-1;r++)arrow(ctx,x,cy(r)+11,x,cy(r+1)-11,RED,sA*0.75,1.6);}
+  // → MLP box
+  const mlpX=tx+tw+34,mlpY=cy(rws-1),flowA=ease((t-6.6)/1.2);
+  if(flowA>0){arrow(ctx,tx+tw+4,mlpY,mlpX-20,mlpY,GREY,flowA*0.7,1.4);
+    ctx.save();ctx.globalAlpha=flowA;ctx.fillStyle='#f2c4ae';ctx.strokeStyle=RED;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(mlpX-18,mlpY-16);ctx.lineTo(mlpX+18,mlpY-9);ctx.lineTo(mlpX+18,mlpY+9);ctx.lineTo(mlpX-18,mlpY+16);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle=RED;ctx.font='bold 10px sans-serif';ctx.fillText('MLP',mlpX,mlpY);ctx.restore();}
+  // → predicted distribution (bimodal)
+  const dx=Math.min(mlpX+42,w*0.62),dw=w-dx-12,dyB=ty+(rws)*ch,dh=Math.min(ch*3.4,h*0.42),distA=ease((t-7.0)/2.0);
+  if(distA>0){const N=24;ctx.save();ctx.globalAlpha=distA;
+    for(let k=0;k<N;k++){const xf=k/(N-1);
+      const v=Math.exp(-Math.pow((xf-0.30)/0.12,2))*0.92+Math.exp(-Math.pow((xf-0.72)/0.13,2));
+      const bh=dh*v/1.92,bx=dx+xf*(dw-dw/N);
+      ctx.fillStyle='#8a90a0';ctx.fillRect(bx,dyB-bh,dw/N-1.5,bh);}
+    ctx.strokeStyle='#d2d6de';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(dx,dyB);ctx.lineTo(dx+dw,dyB);ctx.stroke();
+    ctx.fillStyle=GREY;ctx.font='10px sans-serif';ctx.fillText('predicted ŷ distribution',dx+dw/2,dyB+13);ctx.restore();}
+  ctx.textAlign='start';
+  api.sub(t<1.2?'Training rows + the test point ( ? ) enter together — in-context':
+          t<4.2?'① Feature attention — across columns → interactions between predictors':
+          t<7.0?'② Sample attention — across rows → compare with similar samples':
+          '③ MLP → a full predicted distribution, not just one number');
+}
+
 /* ---------- wire up ---------- */
 const animByName={
   gp:Anim($('cv-gp'),gpRender,$('sub-gp')),
   perm:Anim($('cv-perm'),permRender,$('sub-perm')),
   scm:Anim($('cv-scm'),scmRender,$('sub-scm')),
+  attn:Anim($('cv-attn'),attnRender,$('sub-attn')),
   factory:Anim($('cv-factory'),facRender,$('sub-factory')),
-  race:Anim($('cv-race'),raceRender,$('sub-race')),
+  race:Anim($('cv-race'),raceRender,$('sub-race'),{once:true,dur:5}),
 };
-const slideAnims={1:['gp','perm','scm'],2:['factory'],3:['race']}; // by 0-based slide index
+const slideAnims={1:['gp','perm','scm'],2:['attn'],3:['factory'],4:['race']}; // by 0-based slide index
 function runSlide(idx){for(const k in animByName)animByName[k].stop();(slideAnims[idx]||[]).forEach(n=>animByName[n].play());}
 document.querySelectorAll('.replay').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const a=animByName[b.dataset.anim];if(a)a.restart();}));
 window.addEventListener('resize',()=>runSlide(i));
