@@ -51,7 +51,7 @@
     </div>
     <div class="fig"><img src="god.png" alt="god"></div>
   </div>
-  <div class="foot"><span>TabPFN — small tabular classification</span><span>1 / 5</span></div>
+  <div class="foot"><span>TabPFN — small tabular classification</span><span>1 / 6</span></div>
 </section>
 
 <!-- SLIDE 2: The idea -->
@@ -72,7 +72,7 @@
       <div class="cap">A whole AutoML stack (tuning, ensembling) → replaced by one TabPFN forward pass. <span style="color:#9aa0aa">(via Max Kuhn, R/Pharma 2025)</span></div>
     </div>
   </div>
-  <div class="foot"><span>In-context learning for tables</span><span>2 / 5</span></div>
+  <div class="foot"><span>In-context learning for tables</span><span>2 / 6</span></div>
 </section>
 
 <!-- SLIDE 3: How it works -->
@@ -89,28 +89,44 @@
       <div class="cap"><b>Feature attention</b> (columns → interactions) + <b>sample attention</b> (rows → similar cases). <span style="color:#9aa0aa">(Hollmann et al., 2025)</span></div>
     </div>
   </div>
-  <div class="foot"><span>2D attention · TabPFN v2 · pretrained once</span><span>3 / 5</span></div>
+  <div class="foot"><span>2D attention · TabPFN v2 · pretrained once</span><span>3 / 6</span></div>
 </section>
 
-<!-- SLIDE 4: Trained on synthetic worlds → behaves like a GP -->
+<!-- SLIDE 4: Synthetic causal prior -->
 <section class="slide">
-  <div class="kicker">Where it learned that · and how it behaves</div>
-  <h2>Pretrained on synthetic causal worlds → smooth, GP-like, fits any shape</h2>
-  <div class="row" style="gap:1.2vw;align-items:center">
-    <div class="fig" style="flex:.8">
-      <img src="Structural-causal-model-SCM-of-different-factors-that-we-test-M-represents-the-model.webp" alt="structural causal model" style="max-height:56vh">
-      <div class="cap">Prior = millions of datasets from <b>structural causal models</b>, biased to <b>simple</b> structures (Occam).</div>
+  <div class="kicker">Where it learned that</div>
+  <h2>Pretrained on millions of synthetic causal worlds</h2>
+  <div class="row" style="gap:3vw;align-items:center">
+    <div class="col">
+      <ul>
+        <li>Each synthetic dataset comes from a <b>structural causal model</b> — a random causal graph (DAG).</li>
+        <li>Sample noise → <b>propagate cause → effect</b> → tag some nodes as features <b>X</b> and one as target <b>y</b>.</li>
+        <li>The prior <b>prefers simple graphs</b> (Occam's razor) → smooth, calibrated predictions with <b>zero tuning</b>.</li>
+      </ul>
     </div>
-    <div class="fig" style="flex:1.2">
-      <img src="boundaries.webp" alt="decision boundaries across methods" style="max-height:56vh">
-      <div class="cap"><b>Smooth, calibrated</b> boundaries vs blocky trees — GP-like. <span style="color:#9aa0aa">(Fig. 4)</span></div>
-    </div>
-    <div class="fig" style="flex:1.2">
-      <img src="diverse_function.webp" alt="TabPFN fits diverse functions" style="max-height:56vh">
-      <div class="cap"><b>Fits a broad class of functions</b> — sin, x², |x|, step, noise.</div>
+    <div class="fig" style="flex:1.15">
+      <img src="Structural-causal-model-SCM-of-different-factors-that-we-test-M-represents-the-model.webp" alt="structural causal model" style="max-height:66vh">
+      <div class="cap">A structural causal model: causes → effects generate one labelled dataset.</div>
     </div>
   </div>
-  <div class="foot"><span>Prior-Data Fitted Network · causal prior</span><span>4 / 5</span></div>
+  <div class="foot"><span>Prior-Data Fitted Network · causal prior</span><span>4 / 6</span></div>
+</section>
+
+<!-- SLIDE 5: Behaves like a GP -->
+<section class="slide">
+  <div class="kicker">How it behaves</div>
+  <h2>Smooth, GP-like — and it fits almost any shape</h2>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:1vh">
+    <div class="fig">
+      <img src="boundaries.webp" alt="decision boundaries across methods" style="max-height:46vh">
+      <div class="cap"><b>Smooth, calibrated</b> decision boundaries (TabPFN, far right) vs blocky trees — like the Gaussian-Process column. <span style="color:#9aa0aa">(Hollmann et al., Fig. 4)</span></div>
+    </div>
+    <div class="fig">
+      <img src="diverse_function.webp" alt="TabPFN fits diverse functions" style="max-height:34vh">
+      <div class="cap"><b>Fits a broad class of functions</b> — sin, x², |x|, step, and noise — where linear models and trees struggle.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Smooth &amp; flexible — GP-like behaviour</span><span>5 / 6</span></div>
 </section>
 
 <!-- SLIDE 5: Results & limits -->
@@ -132,7 +148,7 @@
       </ul>
     </div>
   </div>
-  <div class="foot"><span>Fast &amp; strong, but bounded — TabPFN v1</span><span>5 / 5</span></div>
+  <div class="foot"><span>Fast &amp; strong, but bounded — TabPFN v1</span><span>6 / 6</span></div>
 </section>
 
 <div class="nav">← → to navigate · F for fullscreen · print to PDF</div>
